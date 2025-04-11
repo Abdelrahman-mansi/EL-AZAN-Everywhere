@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مواعيد الأذان</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin-top: 50px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #4CAF50;
+        }
+
+        .time {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+
+        .error {
+            color: red;
+            font-size: 18px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 16px;
+            margin: 20px 0;
+            width: 80%;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>مواعيد الأذان</h1>
+        <p>أدخل اسم المدينة أو المنطقة:</p>
+        <input type="text" id="city" placeholder="مثال: القاهرة">
+        <button onclick="getPrayerTimes()">عرض المواعيد</button>
+        <div id="prayer-times"></div>
+        <div id="error-message" class="error"></div>
+    </div>
+
+    <script>
+        function getPrayerTimes() {
+            var city = document.getElementById("city").value;
+
+            if (!city) {
+                document.getElementById("error-message").textContent = "يرجى إدخال اسم المدينة.";
+                return;
+            }
+
+            var url = `https://api.aladhan.com/v1/timingsByCity?city=${city}&country=EG&method=2`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code !== 200) {
+                        document.getElementById("error-message").textContent = "لم يتم العثور على مواعيد الأذان للمدينة المدخلة.";
+                    } else {
+                        displayPrayerTimes(data);
+                    }
+                })
+                .catch(error => {
+                    document.getElementById("error-message").textContent = "حدث خطأ أثناء جلب مواعيد الأذان.";
+                    console.error("Error fetching prayer times:", error);
+                });
+        }
+
+        function displayPrayerTimes(data) {
+            var timings = data.data.timings;
+
+            var prayerTimes = `
+                <div class="time">الفجر: ${timings.Fajr}</div>
+                <div class="time">الظهر: ${timings.Dhuhr}</div>
+                <div class="time">العصر: ${timings.Asr}</div>
+                <div class="time">المغرب: ${timings.Maghrib}</div>
+                <div class="time">العشاء: ${timings.Isha}</div>
+            `;
+
+            document.getElementById("prayer-times").innerHTML = prayerTimes;
+        }
+    </script>
+</body>
+</html>
